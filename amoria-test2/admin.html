@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amoria — Quản Trị</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js?v=3"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #18181f;
+      --surface2: #22222d;
+      --border: #2e2e3d;
+      --accent: #c9a96e;
+      --accent2: #e8c98a;
+      --text: #f0ede8;
+      --muted: #8a8799;
+      --danger: #e05c5c;
+      --success: #4caf82;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .admin-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-header .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      color: var(--accent);
+    }
+
+    .admin-header .logo span {
+      color: var(--text);
+      font-weight: 300;
+    }
+
+    .admin-header .badge {
+      background: var(--accent);
+      color: #1a1000;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .admin-header .back-link {
+      margin-left: auto;
+      font-size: .85rem;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: color .2s;
+    }
+
+    .admin-header .back-link:hover {
+      color: var(--accent);
+    }
+
+    /* ── LAYOUT ── */
+    .admin-body {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      transition: border-color .2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+    }
+
+    .stat-card .stat-label {
+      font-size: .72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .stat-card .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-card .stat-sub {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    /* ── SECTION ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.6rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: .8rem;
+    }
+
+    .section-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .section-header .count {
+      font-size: .78rem;
+      background: var(--surface2);
+      color: var(--muted);
+      padding: .2rem .7rem;
+      border-radius: 99px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-export {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .55rem 1.2rem;
+      background: linear-gradient(135deg, #c9a96e, #e8c98a);
+      color: #1a1000;
+      font-size: .82rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      letter-spacing: .02em;
+    }
+
+    .btn-export:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .btn-export:active {
+      transform: translateY(0);
+    }
+
+    .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .5rem 1rem;
+      background: transparent;
+      color: var(--danger);
+      font-size: .78rem;
+      font-weight: 600;
+      border: 1px solid var(--danger);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .btn-clear:hover {
+      background: rgba(224, 92, 92, .1);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+
+    thead th {
+      background: var(--surface2);
+      padding: .7rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: var(--surface2);
+    }
+
+    tbody td {
+      padding: .75rem 1rem;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    tbody td.muted {
+      color: var(--muted);
+    }
+
+    .ref-badge {
+      font-family: monospace;
+      font-size: .78rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: .2rem .6rem;
+      border-radius: 6px;
+      color: var(--accent);
+    }
+
+    .pay-badge {
+      font-size: .72rem;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    .pay-badge.cod {
+      background: rgba(76, 175, 130, .12);
+      color: var(--success);
+    }
+
+    .pay-badge.qr {
+      background: rgba(201, 169, 110, .12);
+      color: var(--accent);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+
+    .empty-state svg {
+      opacity: .3;
+      margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+      font-size: .9rem;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--success);
+      color: #fff;
+      padding: .8rem 1.4rem;
+      border-radius: 10px;
+      font-size: .85rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── LOGIN MODAL ── */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 15, 19, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s, visibility .3s;
+    }
+
+    .login-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .login-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+      animation: slideUp .3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--accent);
+    }
+
+    .login-modal-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
+    }
+
+    .login-form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .login-form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text);
+    }
+
+    .login-form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: border-color .2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .login-form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .login-btn-submit {
+      width: 100%;
+      padding: 0.85rem 1.2rem;
+      background: linear-gradient(135deg, #c9a96e, #e8c98a);
+      color: #1a1000;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      letter-spacing: .02em;
+    }
+
+    .login-btn-submit:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .login-btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .login-btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .login-error {
+      font-size: 0.8rem;
+      color: var(--danger);
+      margin-bottom: 1rem;
+      text-align: center;
+      min-height: 1.2rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .admin-header {
+        padding: .8rem 1rem;
+      }
+
+      .admin-body {
+        padding: 1rem .8rem 3rem;
+      }
+
+      .section-header {
+        padding: 1rem;
+      }
+
+      .login-modal {
+        padding: 2rem 1.5rem;
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Login Modal -->
+  <div class="login-overlay show" id="login-overlay">
+    <div class="login-modal">
+      <h2 class="login-modal-title">Quản Trị Viên</h2>
+      <p class="login-modal-desc">Nhập mật khẩu để truy cập bảng quản lý</p>
+      <form id="login-form">
+        <div class="login-error" id="login-error"></div>
+        <div class="login-form-group">
+          <label for="login-password">Mật Khẩu</label>
+          <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="login-btn-submit">Đăng Nhập</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="admin-header">
+    <span class="logo">AMORIA <span>Admin</span></span>
+    <span class="badge">Quản Trị</span>
+    <a class="back-link" href="index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </svg>
+      Về trang chủ
+    </a>
+    <button class="back-link" onclick="logoutAdmin()" title="Đăng xuất" style="background:none;border:none;cursor:pointer;padding:0;margin-left:.8rem;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+      </svg>
+      Đăng xuất
+    </button>
+  </header>
+
+  <div class="admin-body">
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Đơn Hàng</div>
+        <div class="stat-value" id="stat-orders">0</div>
+        <div class="stat-sub">đơn đã đặt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Đăng Ký Nhận Tin</div>
+        <div class="stat-value" id="stat-subs">0</div>
+        <div class="stat-sub">người đăng ký</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Lượt Ghé Thăm</div>
+        <div class="stat-value" id="stat-visits">0</div>
+        <div class="stat-sub">phiên truy cập</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">COD</div>
+        <div class="stat-value" id="stat-cod">0</div>
+        <div class="stat-sub">thanh toán khi nhận</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Chuyển Khoản QR</div>
+        <div class="stat-value" id="stat-qr">0</div>
+        <div class="stat-sub">đã chuyển khoản</div>
+      </div>
+    </div>
+
+    <!-- ── BẢNG ĐƠN HÀNG ── -->
+    <div class="section">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <h2>📦 Đơn Hàng</h2>
+          <span class="count" id="orders-count">0 đơn</span>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+          <button class="btn-export" onclick="exportOrders()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Xuất Excel
+          </button>
+          <button class="btn-clear" onclick="clearOrders()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
+            Xoá tất cả
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mã ĐH</th>
+              <th>Tên</th>
+              <th>Email</th>
+              <th>SĐT</th>
+              <th>Địa Chỉ</th>
+              <th>Sản Phẩm</th>
+              <th>Tổng</th>
+              <th>Thanh Toán</th>
+              <th>Ghi Chú</th>
+              <th>Thời Gian</th>
+            </tr>
+          </thead>
+          <tbody id="orders-body">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── BẢNG ĐĂNG KÝ NHẬN TIN ── -->
+    <div class="section">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <h2>📋 Đăng Ký Nhận Thông Tin</h2>
+          <span class="count" id="subs-count">0 người</span>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+          <button class="btn-export" onclick="exportSubs()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Xuất Excel
+          </button>
+          <button class="btn-clear" onclick="clearSubs()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
+            Xoá tất cả
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="subs-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tên</th>
+              <th>SĐT</th>
+              <th>Lời Nhắn</th>
+              <th>Nguồn</th>
+              <th>Thời Gian</th>
+            </tr>
+          </thead>
+          <tbody id="subs-body">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── BẢNG LƯỢT XEM ── -->
+    <div class="section">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <h2>👁 Lượt Ghé Thăm</h2>
+          <span class="count" id="visits-count">0 lượt</span>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+          <button class="btn-export" onclick="exportVisits()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Xuất Excel
+          </button>
+          <button class="btn-clear" onclick="clearVisits()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+            </svg>
+            Xoá tất cả
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="visits-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Thời Gian</th>
+              <th>Thiết Bị</th>
+              <th>Trình Duyệt</th>
+              <th>Độ Phân Giải</th>
+              <th>Nguồn Truy Cập</th>
+            </tr>
+          </thead>
+          <tbody id="visits-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Nút xuất tất cả -->
+    <div style="text-align:center;margin-top:1rem;">
+      <button class="btn-export" style="padding:.8rem 2.5rem;font-size:.9rem;" onclick="exportAll()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Xuất Tất Cả Ra 1 File Excel (3 Sheet)
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">✔ Đã xuất file Excel!</div>
+
+  <script>
+    /* ════════════════════════════════════════
+       AUTHENTICATION
+    ════════════════════════════════════════ */
+    var ADMIN_PASSWORD = 'Amoria@@123';
+
+    function loginAdmin(password) {
+      if (password === ADMIN_PASSWORD) {
+        var overlay = document.getElementById('login-overlay');
+        if (overlay) overlay.classList.remove('show');
+        return true;
+      }
+      return false;
+    }
+
+    function logoutAdmin() {
+      var overlay = document.getElementById('login-overlay');
+      var passwordInput = document.getElementById('login-password');
+      if (overlay) overlay.classList.add('show');
+      if (passwordInput) passwordInput.value = '';
+    }
+
+    // Khởi tạo kiểm tra xác thực khi trang load
+    (function initAuth() {
+      var overlay = document.getElementById('login-overlay');
+      var form = document.getElementById('login-form');
+      var passwordInput = document.getElementById('login-password');
+      var errorMsg = document.getElementById('login-error');
+
+      // Luôn hiển thị modal login khi vào trang
+      if (overlay) overlay.classList.add('show');
+
+      // Xử lý submit form
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var password = passwordInput ? passwordInput.value : '';
+
+          if (loginAdmin(password)) {
+            // Đăng nhập thành công, tải dữ liệu từ Firebase
+            loadData();
+            // Auto refresh mỗi 10 giây
+            setInterval(loadData, 10000);
+            if (errorMsg) errorMsg.textContent = '';
+            if (passwordInput) passwordInput.value = '';
+          } else {
+            // Sai mật khẩu
+            if (errorMsg) errorMsg.textContent = '❌ Mật khẩu không đúng. Vui lòng thử lại.';
+            if (passwordInput) passwordInput.value = '';
+          }
+        });
+      }
+
+      // Focus vào password input
+      if (passwordInput) passwordInput.focus();
+    })();
+
+    /* ════════════════════════════════════════
+       DATA HELPERS
+    ════════════════════════════════════════ */
+    var allOrders = [];
+    var allSubs = [];
+    var allVisits = [];
+
+    async function loadData() {
+      try {
+        allOrders = await getDocuments(COLLECTIONS.ORDERS);
+        allSubs = await getDocuments(COLLECTIONS.SUBSCRIPTIONS);
+        allVisits = await getDocuments(COLLECTIONS.VISITS);
+        render();
+      } catch (error) {
+        console.error('Lỗi tải dữ liệu:', error);
+      }
+    }
+
+    function getOrders() { return allOrders; }
+    function getSubs() { return allSubs; }
+    function getVisits() { return allVisits; }
+
+    /* ════════════════════════════════════════
+       RENDER
+    ════════════════════════════════════════ */
+    function render() {
+      var orders = getOrders();
+      var subs = getSubs();
+      var visits = getVisits();
+
+      /* Stats */
+      document.getElementById('stat-orders').textContent = orders.length;
+      document.getElementById('stat-subs').textContent = subs.length;
+      document.getElementById('stat-visits').textContent = visits.length;
+      document.getElementById('stat-cod').textContent = orders.filter(function (o) { return o.payment && o.payment.indexOf('COD') !== -1; }).length;
+      document.getElementById('stat-qr').textContent = orders.filter(function (o) { return o.payment && o.payment.indexOf('QR') !== -1; }).length;
+      document.getElementById('orders-count').textContent = orders.length + ' đơn';
+      document.getElementById('subs-count').textContent = subs.length + ' người';
+      document.getElementById('visits-count').textContent = visits.length + ' lượt';
+
+      /* Orders table */
+      var ob = document.getElementById('orders-body');
+      if (!orders.length) {
+        ob.innerHTML = '<tr><td colspan="11"><div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Chưa có đơn hàng nào</p></div></td></tr>';
+      } else {
+        ob.innerHTML = orders.map(function (o, i) {
+          var isCOD = o.payment && o.payment.indexOf('COD') !== -1;
+          var timestamp = o.timestamp || o.createdAt || '';
+          return '<tr>'
+            + '<td class="muted">' + (i + 1) + '</td>'
+            + '<td><span class="ref-badge">' + esc(o.ref) + '</span></td>'
+            + '<td><strong>' + esc(o.name) + '</strong></td>'
+            + '<td class="muted">' + esc(o.email) + '</td>'
+            + '<td>' + esc(o.phone) + '</td>'
+            + '<td class="muted" style="max-width:180px;white-space:normal;">' + esc(o.address) + '</td>'
+            + '<td style="max-width:200px;white-space:normal;">' + esc(o.products) + '</td>'
+            + '<td><strong style="color:var(--accent)">' + esc(o.total) + '</strong></td>'
+            + '<td><span class="pay-badge ' + (isCOD ? 'cod' : 'qr') + '">' + esc(o.payment) + '</span></td>'
+            + '<td class="muted">' + esc(o.note || '—') + '</td>'
+            + '<td class="muted" style="white-space:nowrap;">' + esc(timestamp) + '</td>'
+            + '</tr>';
+        }).join('');
+      }
+
+      /* Subs table */
+      var sb = document.getElementById('subs-body');
+      if (!subs.length) {
+        sb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><p>Chưa có đăng ký nào</p></div></td></tr>';
+      } else {
+        sb.innerHTML = subs.map(function (s, i) {
+          var timestamp = s.timestamp || s.createdAt || '';
+          return '<tr>'
+            + '<td class="muted">' + (i + 1) + '</td>'
+            + '<td>' + esc(s.name || '—') + '</td>'
+            + '<td>' + esc(s.phone) + '</td>'
+            + '<td class="muted" style="max-width:220px;white-space:normal;">' + esc(s.message || '—') + '</td>'
+            + '<td><span style="font-size:.72rem;background:var(--surface2);border:1px solid var(--border);padding:.15rem .5rem;border-radius:6px;">' + esc(s.source || '—') + '</span></td>'
+            + '<td class="muted" style="white-space:nowrap;">' + esc(timestamp) + '</td>'
+            + '</tr>';
+        }).join('');
+      }
+
+      /* Visits table */
+      var vb = document.getElementById('visits-body');
+      var visitsRev = visits.slice().reverse(); /* Mới nhất lên đầu */
+      if (!visitsRev.length) {
+        vb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><p>Chưa có lượt truy cập nào</p></div></td></tr>';
+      } else {
+        vb.innerHTML = visitsRev.map(function (v, i) {
+          var refColor = v.referrer && v.referrer.indexOf('facebook') !== -1 ? '#1877f2' : v.referrer && v.referrer.indexOf('instagram') !== -1 ? '#e1306c' : '#8a8799';
+          var devIcon = v.device === 'Di động'
+            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>'
+            : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>';
+          return '<tr>'
+            + '<td class="muted">' + (visitsRev.length - i) + '</td>'
+            + '<td style="white-space:nowrap">' + esc(v.timestamp) + '</td>'
+            + '<td><span style="display:inline-flex;align-items:center;gap:.3rem">' + devIcon + esc(v.device) + '</span></td>'
+            + '<td class="muted">' + esc(v.browser || '—') + '</td>'
+            + '<td class="muted" style="font-size:.75rem">' + esc(v.screen || '—') + '</td>'
+            + '<td><span style="font-size:.72rem;padding:.15rem .5rem;border-radius:99px;background:' + refColor + '22;color:' + refColor + ';border:1px solid ' + refColor + '44;">' + esc(v.referrer || 'Trực tiếp') + '</span></td>'
+            + '</tr>';
+        }).join('');
+      }
+    }
+
+    function esc(v) {
+      if (v === undefined || v === null) return '';
+      return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ════════════════════════════════════════
+       EXPORT HELPERS  (SheetJS)
+    ════════════════════════════════════════ */
+    function colStyle() {
+      return { font: { bold: true }, fill: { fgColor: { rgb: 'C9A96E' } }, alignment: { horizontal: 'center' } };
+    }
+
+    function ordersSheetData() {
+      var orders = getOrders();
+      var header = ['STT', 'Mã Đơn Hàng', 'Tên Người Nhận', 'Email', 'Số Điện Thoại', 'Địa Chỉ', 'Sản Phẩm', 'Tổng Tiền', 'Hình Thức Thanh Toán', 'Ghi Chú', 'Thời Gian'];
+      var rows = orders.map(function (o, i) {
+        var timestamp = o.timestamp || o.createdAt || '';
+        return [i + 1, o.ref, o.name, o.email, o.phone, o.address, o.products, o.total, o.payment, o.note || '', timestamp];
+      });
+      return [header].concat(rows);
+    }
+
+    function subsSheetData() {
+      var subs = getSubs();
+      var header = ['STT', 'Tên', 'Số Điện Thoại', 'Lời Nhắn', 'Nguồn', 'Thời Gian'];
+      var rows = subs.map(function (s, i) {
+        var timestamp = s.timestamp || s.createdAt || '';
+        return [i + 1, s.name || '', s.phone, s.message || '', s.source || '', timestamp];
+      });
+      return [header].concat(rows);
+    }
+
+    function visitsSheetData() {
+      var visits = getVisits().slice().reverse();
+      var header = ['STT', 'Thời Gian', 'Thiết Bị', 'Trình Duyệt', 'Độ Phân Giải', 'Nguồn Truy Cập'];
+      var rows = visits.map(function (v, i) {
+        return [i + 1, v.timestamp || '', v.device || '', v.browser || '', v.screen || '', v.referrer || 'Trực tiếp'];
+      });
+      return [header].concat(rows);
+    }
+
+    function applyHeaderStyle(ws, numCols) {
+      for (var c = 0; c < numCols; c++) {
+        var addr = XLSX.utils.encode_cell({ r: 0, c: c });
+        if (!ws[addr]) continue;
+        ws[addr].s = {
+          font: { bold: true, color: { rgb: '1A1000' } },
+          fill: { patternType: 'solid', fgColor: { rgb: 'C9A96E' } },
+          alignment: { horizontal: 'center', vertical: 'center' },
+          border: { bottom: { style: 'thin', color: { rgb: '8B6914' } } }
+        };
+      }
+    }
+
+    function makeWorkbook(sheets) {
+      var wb = XLSX.utils.book_new();
+      sheets.forEach(function (s) {
+        var ws = XLSX.utils.aoa_to_sheet(s.data);
+        /* Auto column width */
+        var cols = s.data[0].map(function (_, ci) {
+          var max = 10;
+          s.data.forEach(function (row) {
+            var v = row[ci] ? String(row[ci]) : '';
+            if (v.length > max) max = v.length;
+          });
+          return { wch: Math.min(max + 2, 50) };
+        });
+        ws['!cols'] = cols;
+        applyHeaderStyle(ws, s.data[0].length);
+        XLSX.utils.book_append_sheet(wb, ws, s.name);
+      });
+      return wb;
+    }
+
+    function exportOrders() {
+      var data = ordersSheetData();
+      if (data.length < 2) { alert('Chưa có đơn hàng nào để xuất!'); return; }
+      var wb = makeWorkbook([{ name: 'Đơn Hàng', data: data }]);
+      XLSX.writeFile(wb, 'Amoria_DonHang_' + dateTag() + '.xlsx');
+      toast('✔ Đã xuất ' + (data.length - 1) + ' đơn hàng!');
+    }
+
+    function exportSubs() {
+      var data = subsSheetData();
+      if (data.length < 2) { alert('Chưa có đăng ký nào để xuất!'); return; }
+      var wb = makeWorkbook([{ name: 'Đăng Ký Nhận Tin', data: data }]);
+      XLSX.writeFile(wb, 'Amoria_DangKy_' + dateTag() + '.xlsx');
+      toast('✔ Đã xuất ' + (data.length - 1) + ' đăng ký!');
+    }
+
+    function exportVisits() {
+      var data = visitsSheetData();
+      if (data.length < 2) { alert('Chưa có lượt xem nào để xuất!'); return; }
+      var wb = makeWorkbook([{ name: 'Lượt Xem', data: data }]);
+      XLSX.writeFile(wb, 'Amoria_LuotXem_' + dateTag() + '.xlsx');
+      toast('✔ Đã xuất ' + (data.length - 1) + ' lượt truy cập!');
+    }
+
+    function exportAll() {
+      var orders = ordersSheetData();
+      var subs = subsSheetData();
+      var visits = visitsSheetData();
+      if (orders.length < 2 && subs.length < 2 && visits.length < 2) { alert('Chưa có dữ liệu nào để xuất!'); return; }
+      var sheets = [];
+      if (orders.length >= 2) sheets.push({ name: 'Đơn Hàng', data: orders });
+      if (subs.length >= 2) sheets.push({ name: 'Đăng Ký Nhận Tin', data: subs });
+      if (visits.length >= 2) sheets.push({ name: 'Lượt Xem', data: visits });
+      var wb = makeWorkbook(sheets);
+      XLSX.writeFile(wb, 'Amoria_ToanBo_' + dateTag() + '.xlsx');
+      toast('✔ Đã xuất toàn bộ dữ liệu!');
+    }
+
+    /* ════════════════════════════════════════
+       CLEAR DATA
+    ════════════════════════════════════════ */
+    async function clearOrders() {
+      if (!confirm('Xoá toàn bộ đơn hàng? Hành động này không thể hoàn tác.')) return;
+      try {
+        await deleteAllDocuments(COLLECTIONS.ORDERS);
+        allOrders = [];
+        render();
+        toast('✔ Đã xoá toàn bộ đơn hàng!');
+      } catch (error) {
+        console.error('Lỗi xoá đơn hàng:', error);
+      }
+    }
+    
+    async function clearSubs() {
+      if (!confirm('Xoá toàn bộ danh sách đăng ký? Hành động này không thể hoàn tác.')) return;
+      try {
+        await deleteAllDocuments(COLLECTIONS.SUBSCRIPTIONS);
+        allSubs = [];
+        render();
+        toast('✔ Đã xoá toàn bộ danh sách đăng ký!');
+      } catch (error) {
+        console.error('Lỗi xoá đăng ký:', error);
+      }
+    }
+    
+    async function clearVisits() {
+      if (!confirm('Xoá toàn bộ lịch sử lượt xem? Hành động này không thể hoàn tác.')) return;
+      try {
+        await deleteAllDocuments(COLLECTIONS.VISITS);
+        allVisits = [];
+        render();
+        toast('✔ Đã xoá toàn bộ lịch sử lượt xem!');
+      } catch (error) {
+        console.error('Lỗi xoá lượt xem:', error);
+      }
+    }
+
+    /* ════════════════════════════════════════
+       UTILS
+    ════════════════════════════════════════ */
+    function dateTag() {
+      var d = new Date();
+      return d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+    }
+
+    var _toastTimer;
+    function toast(msg) {
+      var el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(function () { el.classList.remove('show'); }, 3000);
+    }
+
+    /* ── INIT ── */
+    // Không load data ở đây vì cần đăng nhập trước
+    // loadData() sẽ được gọi sau khi đăng nhập thành công
+  </script>
+
+</body>
+
+</html>
