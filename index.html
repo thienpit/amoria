@@ -12,69 +12,7 @@
           'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
     })(window, document, 'script', 'dataLayer', 'GTM-PSBCZ2CV');</script>
   <!-- End Google Tag Manager -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amoria — Vòng Tay Đi Biển</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <!-- Firebase SDK - Compat version (compatible) -->
-  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js?v=3"></script>
-  <script>
-    // Inline nav functions
-    function showPage(id) {
-      var pages = document.querySelectorAll('.page');
-      for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
-      var p = document.getElementById(id);
-      if (p) { p.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-      closeCart();
-    }
-    function openCart() {
-      var d = document.getElementById('cart-drawer');
-      var o = document.getElementById('cart-overlay');
-      if (d) d.classList.add('open');
-      if (o) o.classList.add('open');
-      if (typeof renderCartDrawer === 'function') renderCartDrawer();
-    }
-    function closeCart() {
-      var d = document.getElementById('cart-drawer');
-      var o = document.getElementById('cart-overlay');
-      if (d) d.classList.remove('open');
-      if (o) o.classList.remove('open');
-    }
-    function toggleCart() {
-      var d = document.getElementById('cart-drawer');
-      if (d && d.classList.contains('open')) { closeCart(); } else { openCart(); }
-    }
-    function toggleMenu() {
-      var nav = document.getElementById('nav-links');
-      var btn = document.getElementById('hamburger');
-      if (nav) nav.classList.toggle('open');
-      if (btn) btn.classList.toggle('active');
-    }
-    function closeMenu() {
-      var nav = document.getElementById('nav-links');
-      var btn = document.getElementById('hamburger');
-      if (nav) nav.classList.remove('open');
-      if (btn) btn.classList.remove('active');
-    }
-  </script>
-</head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BXFNXHYNMB"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { dataLayer.push(arguments); }
-  gtag('js', new Date());
-
-  gtag('config', 'G-BXFNXHYNMB');
-</script>
-
-<body>
-
-  <!-- Google tag (gtag.js) -->
-  <!-- Facebook Pixel Code -->
+    <!-- Facebook Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
 {
@@ -139,6 +77,69 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=957208667285613&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amoria — Vòng Tay Đi Biển</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Firebase SDK - Compat version (compatible) -->
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js?v=3"></script>
+  <script>
+    // Inline nav functions
+    function showPage(id) {
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+      var p = document.getElementById(id);
+      if (p) { p.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      closeCart();
+    }
+    function openCart() {
+      var d = document.getElementById('cart-drawer');
+      var o = document.getElementById('cart-overlay');
+      if (d) d.classList.add('open');
+      if (o) o.classList.add('open');
+      if (typeof renderCartDrawer === 'function') renderCartDrawer();
+    }
+    function closeCart() {
+      var d = document.getElementById('cart-drawer');
+      var o = document.getElementById('cart-overlay');
+      if (d) d.classList.remove('open');
+      if (o) o.classList.remove('open');
+    }
+    function toggleCart() {
+      var d = document.getElementById('cart-drawer');
+      if (d && d.classList.contains('open')) { closeCart(); } else { openCart(); }
+    }
+    function toggleMenu() {
+      var nav = document.getElementById('nav-links');
+      var btn = document.getElementById('hamburger');
+      if (nav) nav.classList.toggle('open');
+      if (btn) btn.classList.toggle('active');
+    }
+    function closeMenu() {
+      var nav = document.getElementById('nav-links');
+      var btn = document.getElementById('hamburger');
+      if (nav) nav.classList.remove('open');
+      if (btn) btn.classList.remove('active');
+    }
+  </script>
+
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BXFNXHYNMB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+
+  gtag('config', 'G-BXFNXHYNMB');
+</script>
+  
+<body>
+
+  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BXFNXHYNMB"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
