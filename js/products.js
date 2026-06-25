@@ -1,6 +1,6 @@
 // ── Sale Configuration ──
 const SALE_CONFIG = {
-  enabled: true,
+  enabled: false,
   startTime: '2026-06-24T23:59:00',
   endTime: '2026-06-25T23:59:00',
   discountPercent: 50
